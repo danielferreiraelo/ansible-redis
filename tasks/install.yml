@@ -8,6 +8,14 @@
     ignoreerrors: yes
   when: redis_travis_ci is not defined
 
+- name: disable transparent_hugepage
+  lineinfile: dest=/etc/rc.local line="echo never > /sys/kernel/mm/transparent_hugepage/enabled" insertbefore="exit 0"
+  when: not redis_sentinel
+  
+- name: inject kernel.mm.transparent_hugepage
+  shell: "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
+  when: not redis_sentinel
+
 - name: compile redis
   command: make -j{{ ansible_processor_cores|default(1) + 1 }}{{ ' 32bit' if redis_make_32bit|bool else '' }}
   args:
